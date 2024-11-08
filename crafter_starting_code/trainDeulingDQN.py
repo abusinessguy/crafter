@@ -105,7 +105,7 @@ class DQNAgent:
     # Sample a batch from the buffer and update the Q-network
     def train(self):
         if self.replay_buffer.size() < self.batch_size:
-            return
+            return 0
         
         # Sample a batch of experiences
         batch = self.replay_buffer.sample(self.batch_size)
@@ -132,6 +132,8 @@ class DQNAgent:
 
         # Decrease epsilon to reduce randomness over time
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
+
+        return loss.item()  # Return loss for tracking
 
 
 # Evaluation function to assess agent performance
@@ -161,6 +163,16 @@ def _save_stats(episodic_returns, crt_step, path):
 
 # Main training loop
 def main(opt):
+     # Set random seeds
+    random.seed(opt.seed)
+    torch.manual_seed(opt.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(opt.seed)
+
+    # Define unique log directory based on seed
+    logdir = f"{opt.logdir}/{opt.seed}"
+    Path(logdir).mkdir(parents=True, exist_ok=True)
+
     # Initialize environment, agent, and parameters
     opt.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Running on device: {opt.device}")
@@ -179,6 +191,9 @@ def main(opt):
     # Initialize lists to store steps and rewards for plotting
     steps = []
     avg_rewards = []
+    epsilon_values = []  # New list to store epsilon values
+    loss_values = []
+    loss = 0
 
     # Training loop
     step_cnt, done = 0, True
@@ -194,7 +209,7 @@ def main(opt):
 
         # Store experience and train the agent
         agent.store_experience(obs, action, reward, next_obs, done)
-        agent.train()
+        loss += agent.train()
 
         obs = next_obs
         step_cnt += 1
@@ -207,46 +222,71 @@ def main(opt):
             # Log steps and avg_reward for plotting
             steps.append(step_cnt)
             avg_rewards.append(avg_reward)
+            epsilon_values.append(agent.epsilon)
+            loss_values.append(loss/opt.eval_interval)
 
-    # Plotting results
-    plt.figure(figsize=(10, 6))
-    plt.plot(steps, avg_rewards, label="Average Reward per Episode")
-    plt.xlabel("Training Steps")
-    plt.ylabel("Average Reward")
-    plt.title("DQN Training Performance")
+            loss = 0
+
+    # Plotting results with three metrics: average rewards, epsilon, and loss
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    # Plot average reward per episode on the primary y-axis
+    ax1.plot(steps, avg_rewards, label="Average Reward per Episode", color="b")
+    ax1.set_xlabel("Training Steps")
+    ax1.set_ylabel("Average Reward", color="b")
+    ax1.tick_params(axis='y', labelcolor="b")
+
+    # Plot epsilon values on the secondary y-axis
+    ax2 = ax1.twinx()
+    ax2.plot(steps, epsilon_values, label="Epsilon", color="g", linestyle="--")
+    ax2.set_ylabel("Epsilon", color="g")
+    ax2.tick_params(axis='y', labelcolor="g")
+
+    # Plot loss values on the same axis as reward or on a third y-axis if needed
+    ax3 = ax1.twinx()
+    ax3.spines["right"].set_position(("outward", 60))  # Offset the third axis for clarity
+    ax3.plot(steps, loss_values, label="Loss", color="r", linestyle=":")
+    ax3.set_ylabel("Loss", color="r")
+    ax3.tick_params(axis='y', labelcolor="r")
+
+    # Add legends for each axis
+    ax1.legend(loc="upper left")
+    ax2.legend(loc="upper right")
+    ax3.legend(loc="center right")
+
+    # Add title
+    plt.title("DQN Training Performance with Epsilon Decay and Loss")
 
     # Display hyperparameters on the plot
     plt.text(0.02, 0.02, hyperparams_text, transform=plt.gca().transAxes, fontsize=9,
-             bbox=dict(facecolor='white', alpha=0.7))
-    
-    plt.legend()
-    plt.show()  # Display the plot
+            bbox=dict(facecolor='white', alpha=0.7))
 
-    # Save the plot as an image file (optional)
-    plt.savefig("training_performance.png")
-    print("Training plot saved as training_performance.png")
+    # Save and show the plot
+    plt.savefig("training_performance_with_epsilon_and_loss.png")
+    print("Training plot saved as training_performance_with_epsilon_and_loss.png")
+    plt.show()
 
 
 # Command-line arguments
 def get_options():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--logdir", default="logdir/dqn_agent/0")
+    parser.add_argument("--logdir", default="logdir/dqn_agent", help="Logging directory for the model")
     parser.add_argument("--steps", type=int, default=100_000, help="Total training steps")
     parser.add_argument("--history-length", type=int, default=4, help="Frames to stack")
-    parser.add_argument("--eval-interval", type=int, default=10_000, help="Steps between evaluations")
+    parser.add_argument("--eval-interval", type=int, default=2_000, help="Steps between evaluations")
     parser.add_argument("--eval-episodes", type=int, default=20, help="Episodes per evaluation")
+    parser.add_argument("--seed", type=int, default=0, help="Random seed for reproducibility")
 
     # DQN-specific hyperparameters
     parser.add_argument("--batch-size", type=int, default=64, help="Batch size for training")
     parser.add_argument("--buffer-size", type=int, default=10000, help="Replay buffer size")
-    parser.add_argument("--gamma", type=float, default=0.99, help="Discount factor for Q-learning")
+    parser.add_argument("--gamma", type=float, default=0.4, help="Discount factor for Q-learning")
     parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate for optimizer")
     parser.add_argument("--epsilon-start", type=float, default=1.0, help="Starting value of epsilon for exploration")
     parser.add_argument("--epsilon-end", type=float, default=0.01, help="Minimum value of epsilon for exploration")
-    parser.add_argument("--epsilon-decay", type=float, default=0.995, help="Decay rate of epsilon per step")
+    parser.add_argument("--epsilon-decay", type=float, default=0.99995, help="Decay rate of epsilon per step")
 
     return parser.parse_args()
-
 
 if __name__ == "__main__":
     main(get_options())

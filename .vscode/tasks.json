@@ -1,0 +1,70 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Run All Seeds",
+        "dependsOn": ["Run Seed 1", "Run Seed 2", "Run Seed 3"],
+        "runOptions": { "runOn": "folderOpen" },
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "Run Seed 1",
+        "type": "shell",
+        "command": "python",
+        "args": ["crafter_starting_code/trainDeulingDQN.py", "--logdir", "logdir/dqn_agent/1", "--seed", "1"],
+        "problemMatcher": []
+      },
+      {
+        "label": "Run Seed 2",
+        "type": "shell",
+        "command": "python",
+        "args": ["crafter_starting_code/trainDeulingDQN.py", "--logdir", "logdir/dqn_agent/2", "--seed", "2"],
+        "problemMatcher": []
+      },
+      {
+        "label": "Run Seed 3",
+        "type": "shell",
+        "command": "python",
+        "args": ["crafter_starting_code/trainDeulingDQN.py", "--logdir", "logdir/dqn_agent/3", "--seed", "3"],
+        "problemMatcher": []
+      }
+    ]
+  }
+  {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Run All Seeds",
+        "dependsOn": ["Run Seed 1", "Run Seed 2", "Run Seed 3"],
+        "runOptions": { "runOn": "folderOpen" },
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "Run Seed 1",
+        "type": "shell",
+        "command": "python",
+        "args": ["crafter_starting_code/trainDeulingDQN.py", "--logdir", "logdir/dqn_agent/1", "--seed", "1"],
+        "problemMatcher": []
+      },
+      {
+        "label": "Run Seed 2",
+        "type": "shell",
+        "command": "python",
+        "args": ["crafter_starting_code/trainDeulingDQN.py", "--logdir", "logdir/dqn_agent/2", "--seed", "2"],
+        "problemMatcher": []
+      },
+      {
+        "label": "Run Seed 3",
+        "type": "shell",
+        "command": "python",
+        "args": ["crafter_starting_code/trainDeulingDQN.py", "--logdir", "logdir/dqn_agent/3", "--seed", "3"],
+        "problemMatcher": []
+      }
+    ]
+  }
