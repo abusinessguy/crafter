@@ -259,7 +259,7 @@ def main(opt):
 def get_options():
     parser = argparse.ArgumentParser()
     parser.add_argument("--logdir", default="logdir/dqn_agent", help="Logging directory for the model")
-    parser.add_argument("--steps", type=int, default=200_000, help="Total training steps")
+    parser.add_argument("--steps", type=int, default=500_000, help="Total training steps")
     parser.add_argument("--history-length", type=int, default=4, help="Frames to stack")
     parser.add_argument("--eval-interval", type=int, default=10_000, help="Steps between evaluations")
     parser.add_argument("--eval-episodes", type=int, default=20, help="Episodes per evaluation")
@@ -268,11 +268,11 @@ def get_options():
     # DQN-specific hyperparameters
     parser.add_argument("--batch-size", type=int, default=64, help="Batch size for training")
     parser.add_argument("--buffer-size", type=int, default=10000, help="Replay buffer size")
-    parser.add_argument("--gamma", type=float, default=0.99, help="Discount factor for Q-learning")
+    parser.add_argument("--gamma", type=float, default=0.9, help="Discount factor for Q-learning")
     parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate for optimizer")
     parser.add_argument("--epsilon-start", type=float, default=1.0, help="Starting value of epsilon for exploration")
     parser.add_argument("--epsilon-end", type=float, default=0.01, help="Minimum value of epsilon for exploration")
-    parser.add_argument("--epsilon-decay", type=float, default=0.99999, help="Decay rate of epsilon per step")
+    parser.add_argument("--epsilon-decay", type=float, default=0.999989, help="Decay rate of epsilon per step")
 
     return parser.parse_args()
 

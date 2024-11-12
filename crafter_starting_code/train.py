@@ -70,8 +70,9 @@ def _info(opt):
 
 def main(opt):
     _info(opt)
-    opt.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    opt.device = torch.device("cuda")
     #opt.device = torch.device("cpu")
+    print(f"Running on device: {opt.device}")
     env = Env("train", opt)
     eval_env = Env("eval", opt)
     agent = RandomAgent(env.action_space.n)
@@ -106,7 +107,7 @@ def get_options():
         "--steps",
         type=int,
         metavar="STEPS",
-        default=1_000_000,
+        default=100_000,
         help="Total number of training steps.",
     )
     parser.add_argument(
@@ -119,7 +120,7 @@ def get_options():
     parser.add_argument(
         "--eval-interval",
         type=int,
-        default=100_000,
+        default=10_000,
         metavar="STEPS",
         help="Number of training steps between evaluations",
     )
